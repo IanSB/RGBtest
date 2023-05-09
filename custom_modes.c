@@ -1,6 +1,6 @@
 #include "pico/scanvideo.h"
 
-const scanvideo_timing_t pal_timing_800x288_50_default_0_0 =
+const scanvideo_timing_t pal_timing_800x288_50_default_312 =
         {
                 .clock_freq = 16000000,
 
@@ -23,9 +23,9 @@ const scanvideo_timing_t pal_timing_800x288_50_default_0_0 =
                 .enable_den = 1
         };
 
-const scanvideo_mode_t pal_mode_800x288_50_0_0 =
+const scanvideo_mode_t pal_mode_800x288_50_312 =
         {
-                .default_timing = &pal_timing_800x288_50_default_0_0,
+                .default_timing = &pal_timing_800x288_50_default_312,
                 .pio_program = &video_24mhz_composable,
                 .width = 800,
                 .height = 288,
@@ -36,7 +36,43 @@ const scanvideo_mode_t pal_mode_800x288_50_0_0 =
 
 
 
-const scanvideo_timing_t pal_timing_800x288_50_default_0_1 =
+const scanvideo_timing_t pal_timing_800x288_50_default_314 =
+        {
+                .clock_freq = 16000000,
+
+                .h_active = 800,
+                .v_active = 288,
+
+                .h_front_porch = 32,
+                .h_pulse = 80,
+                .h_total = 1024,
+                .h_sync_polarity = 0,
+
+                .v_front_porch = 4,
+                .v_pulse = 2,
+                .v_total = 314,
+                .v_sync_polarity = 0,
+
+                .enable_clock = 0,
+                .clock_polarity = 0,
+
+                .enable_den = 1
+        };
+
+const scanvideo_mode_t pal_mode_800x288_50_314 =
+        {
+                .default_timing = &pal_timing_800x288_50_default_314,
+                .pio_program = &video_24mhz_composable,
+                .width = 800,
+                .height = 288,
+                .xscale = 1,
+                .yscale = 1,
+        };
+
+
+
+
+const scanvideo_timing_t pal_timing_800x288_50_default_310 =
         {
                 .clock_freq = 16000000,
 
@@ -51,42 +87,6 @@ const scanvideo_timing_t pal_timing_800x288_50_default_0_1 =
                 .v_front_porch = 4,
                 .v_pulse = 2,
                 .v_total = 310,
-                .v_sync_polarity = 1,
-
-                .enable_clock = 0,
-                .clock_polarity = 0,
-
-                .enable_den = 1
-        };
-
-const scanvideo_mode_t pal_mode_800x288_50_0_1 =
-        {
-                .default_timing = &pal_timing_800x288_50_default_0_1,
-                .pio_program = &video_24mhz_composable,
-                .width = 800,
-                .height = 288,
-                .xscale = 1,
-                .yscale = 1,
-        };
-
-
-
-
-const scanvideo_timing_t pal_timing_800x288_50_default_1_0 =
-        {
-                .clock_freq = 16000000,
-
-                .h_active = 800,
-                .v_active = 288,
-
-                .h_front_porch = 32,
-                .h_pulse = 80,
-                .h_total = 1024,
-                .h_sync_polarity = 1,
-
-                .v_front_porch = 4,
-                .v_pulse = 2,
-                .v_total = 310,
                 .v_sync_polarity = 0,
 
                 .enable_clock = 0,
@@ -95,9 +95,9 @@ const scanvideo_timing_t pal_timing_800x288_50_default_1_0 =
                 .enable_den = 1
         };
 
-const scanvideo_mode_t pal_mode_800x288_50_1_0 =
+const scanvideo_mode_t pal_mode_800x288_50_310 =
         {
-                .default_timing = &pal_timing_800x288_50_default_1_0,
+                .default_timing = &pal_timing_800x288_50_default_310,
                 .pio_program = &video_24mhz_composable,
                 .width = 800,
                 .height = 288,
@@ -108,7 +108,7 @@ const scanvideo_mode_t pal_mode_800x288_50_1_0 =
 
 
 
-const scanvideo_timing_t pal_timing_800x288_50_default_1_1 =
+const scanvideo_timing_t pal_timing_800x288_50_default_316 =
         {
                 .clock_freq = 16000000,
 
@@ -118,12 +118,12 @@ const scanvideo_timing_t pal_timing_800x288_50_default_1_1 =
                 .h_front_porch = 32,
                 .h_pulse = 80,
                 .h_total = 1024,
-                .h_sync_polarity = 1,
+                .h_sync_polarity = 0,
 
                 .v_front_porch = 4,
                 .v_pulse = 2,
-                .v_total = 312,
-                .v_sync_polarity = 1,
+                .v_total = 316,
+                .v_sync_polarity = 0,
 
                 .enable_clock = 0,
                 .clock_polarity = 0,
@@ -133,9 +133,9 @@ const scanvideo_timing_t pal_timing_800x288_50_default_1_1 =
 
 
 
-const scanvideo_mode_t pal_mode_800x288_50_1_1 =
+const scanvideo_mode_t pal_mode_800x288_50_316 =
         {
-                .default_timing = &pal_timing_800x288_50_default_1_1,
+                .default_timing = &pal_timing_800x288_50_default_316,
                 .pio_program = &video_24mhz_composable,
                 .width = 800,
                 .height = 288,
@@ -145,53 +145,16 @@ const scanvideo_mode_t pal_mode_800x288_50_1_1 =
 
 
 
-
-
- const scanvideo_timing_t ntsc_timing_744x240_60_default =
+ const scanvideo_timing_t c64_timing_744x240_60_default_262 =
         {
-                .clock_freq = 14312500,    //14333333,   //closest frequency for 14.318181Mhz
+                .clock_freq = 16375000,    //closest frequency for 16.363636Mhz
 
                 .h_active = 744,
                 .v_active = 240,
 
-                .h_front_porch = 25,
+                .h_front_porch = 90,
                 .h_pulse = 80,
-                .h_total = 912,
-                .h_sync_polarity = 1,
-
-                .v_front_porch = 7,
-                .v_pulse = 2,
-                .v_total = 262,
-                .v_sync_polarity = 1,
-
-                .enable_clock = 0,
-                .clock_polarity = 0,
-
-                .enable_den = 1
-        };
-
-
-const scanvideo_mode_t ntsc_mode_744x240_60 =
-        {
-                .default_timing = &ntsc_timing_744x240_60_default,
-                .pio_program = &video_24mhz_composable,
-                .width = 744,
-                .height = 240,
-                .xscale = 1,
-                .yscale = 1,
-        };
-
-
- const scanvideo_timing_t cga_timing_744x240_60_default =
-        {
-                .clock_freq = 14312500,    //14333333,   //closest frequency for 14.318181Mhz
-
-                .h_active = 744,
-                .v_active = 240,
-
-                .h_front_porch = 25,
-                .h_pulse = 80,
-                .h_total = 912,
+                .h_total = 1040,
                 .h_sync_polarity = 0,
 
                 .v_front_porch = 7,
@@ -206,15 +169,201 @@ const scanvideo_mode_t ntsc_mode_744x240_60 =
         };
 
 
-const scanvideo_mode_t cga_mode_744x240_60 =
+const scanvideo_mode_t c64_mode_744x240_60_262 =
         {
-                .default_timing = &cga_timing_744x240_60_default,
+                .default_timing = &c64_timing_744x240_60_default_262,
                 .pio_program = &video_24mhz_composable,
                 .width = 744,
                 .height = 240,
                 .xscale = 1,
                 .yscale = 1,
         };
+
+ const scanvideo_timing_t apple_timing_744x240_60_default_266 =
+        {
+                .clock_freq = 14312500,    //14333333,   //closest frequency for 14.318181Mhz
+
+                .h_active = 744,
+                .v_active = 240,
+
+                .h_front_porch = 25,
+                .h_pulse = 80,
+                .h_total = 912,
+                .h_sync_polarity = 0,
+
+                .v_front_porch = 7,
+                .v_pulse = 2,
+                .v_total = 266,
+                .v_sync_polarity = 0,
+
+                .enable_clock = 0,
+                .clock_polarity = 0,
+
+                .enable_den = 1
+        };
+
+
+const scanvideo_mode_t apple_mode_744x240_60_266 =
+        {
+                .default_timing = &apple_timing_744x240_60_default_266,
+                .pio_program = &video_24mhz_composable,
+                .width = 744,
+                .height = 240,
+                .xscale = 1,
+                .yscale = 1,
+        };
+
+
+
+
+ const scanvideo_timing_t cga_timing_744x240_60_default_00 =
+        {
+                .clock_freq = 14312500,    //14333333,   //closest frequency for 14.318181Mhz
+
+                .h_active = 744,
+                .v_active = 240,
+
+                .h_front_porch = 25,
+                .h_pulse = 80,
+                .h_total = 912,
+                .h_sync_polarity = 0,
+
+                .v_front_porch = 7,
+                .v_pulse = 2,
+                .v_total = 260,
+                .v_sync_polarity = 0,
+
+                .enable_clock = 0,
+                .clock_polarity = 0,
+
+                .enable_den = 1
+        };
+
+
+const scanvideo_mode_t cga_mode_744x240_60_00 =
+        {
+                .default_timing = &cga_timing_744x240_60_default_00,
+                .pio_program = &video_24mhz_composable,
+                .width = 744,
+                .height = 240,
+                .xscale = 1,
+                .yscale = 1,
+        };
+
+
+
+
+
+ const scanvideo_timing_t cga_timing_744x240_60_default_01 =
+        {
+                .clock_freq = 14312500,    //14333333,   //closest frequency for 14.318181Mhz
+
+                .h_active = 744,
+                .v_active = 240,
+
+                .h_front_porch = 25,
+                .h_pulse = 80,
+                .h_total = 912,
+                .h_sync_polarity = 0,
+
+                .v_front_porch = 7,
+                .v_pulse = 2,
+                .v_total = 260,
+                .v_sync_polarity = 1,
+
+                .enable_clock = 0,
+                .clock_polarity = 0,
+
+                .enable_den = 1
+        };
+
+
+const scanvideo_mode_t cga_mode_744x240_60_01 =
+        {
+                .default_timing = &cga_timing_744x240_60_default_01,
+                .pio_program = &video_24mhz_composable,
+                .width = 744,
+                .height = 240,
+                .xscale = 1,
+                .yscale = 1,
+        };
+
+
+
+
+ const scanvideo_timing_t cga_timing_744x240_60_default_10 =
+        {
+                .clock_freq = 14312500,    //14333333,   //closest frequency for 14.318181Mhz
+
+                .h_active = 744,
+                .v_active = 240,
+
+                .h_front_porch = 25,
+                .h_pulse = 80,
+                .h_total = 912,
+                .h_sync_polarity = 1,
+
+                .v_front_porch = 7,
+                .v_pulse = 2,
+                .v_total = 260,
+                .v_sync_polarity = 0,
+
+                .enable_clock = 0,
+                .clock_polarity = 0,
+
+                .enable_den = 1
+        };
+
+
+const scanvideo_mode_t cga_mode_744x240_60_10 =
+        {
+                .default_timing = &cga_timing_744x240_60_default_10,
+                .pio_program = &video_24mhz_composable,
+                .width = 744,
+                .height = 240,
+                .xscale = 1,
+                .yscale = 1,
+        };
+
+
+
+
+
+ const scanvideo_timing_t cga_timing_744x240_60_default_11 =
+        {
+                .clock_freq = 14312500,    //14333333,   //closest frequency for 14.318181Mhz
+
+                .h_active = 744,
+                .v_active = 240,
+
+                .h_front_porch = 25,
+                .h_pulse = 80,
+                .h_total = 912,
+                .h_sync_polarity = 1,
+
+                .v_front_porch = 7,
+                .v_pulse = 2,
+                .v_total = 260,
+                .v_sync_polarity = 1,
+
+                .enable_clock = 0,
+                .clock_polarity = 0,
+
+                .enable_den = 1
+        };
+
+
+const scanvideo_mode_t cga_mode_744x240_60_11 =
+        {
+                .default_timing = &cga_timing_744x240_60_default_11,
+                .pio_program = &video_24mhz_composable,
+                .width = 744,
+                .height = 240,
+                .xscale = 1,
+                .yscale = 1,
+        };
+
+
 
 
  const scanvideo_timing_t atari_mono_timing_704x464_72_default =
@@ -362,12 +511,12 @@ const scanvideo_timing_t pal_timing_576x288_50_0_0 =
                 .h_front_porch = 52,
                 .h_pulse = 56,
                 .h_total = 768,
-                .h_sync_polarity = 1,
+                .h_sync_polarity = 0,
 
                 .v_front_porch = 4,
                 .v_pulse = 2,
-                .v_total = 314,
-                .v_sync_polarity = 1,
+                .v_total = 318,
+                .v_sync_polarity = 0,
 
                 .enable_clock = 0,
                 .clock_polarity = 0,

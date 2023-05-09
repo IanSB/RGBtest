@@ -207,8 +207,8 @@ static struct {
 
 #define DMA_STATE_MODE_COUNT 3
 #define DMA_STATE_MODE_V_ACTIVE       0
-#define DMA_STATE_MODE_V_BLANK        1 
-#define DMA_STATE_MODE_V_BLANK_PULSE  2 
+#define DMA_STATE_MODE_V_BLANK        1
+#define DMA_STATE_MODE_V_BLANK_PULSE  2
 
 #define DMA_STATE_COUNT 4
 
@@ -1372,11 +1372,11 @@ bool scanvideo_setup_with_timing(const scanvideo_mode_t *mode, const scanvideo_t
     bi_decl_if_func_used(bi_pin_mask_with_name(RMASK << (PICO_SCANVIDEO_COLOR_PIN_BASE + PICO_SCANVIDEO_PIXEL_RSHIFT), RMASK == 1 ? "Red" : ("Red 0-" __XSTRING(PICO_SCANVIDEO_PIXEL_GCOUNT))));
     bi_decl_if_func_used(bi_pin_mask_with_name(GMASK << (PICO_SCANVIDEO_COLOR_PIN_BASE + PICO_SCANVIDEO_PIXEL_GSHIFT), GMASK == 1 ? "Green" : ("Green 0-" __XSTRING(PICO_SCANVIDEO_PIXEL_GCOUNT))));
     bi_decl_if_func_used(bi_pin_mask_with_name(BMASK << (PICO_SCANVIDEO_COLOR_PIN_BASE + PICO_SCANVIDEO_PIXEL_BSHIFT), BMASK == 1 ? "Blue" : ("Blue 0-" __XSTRING(PICO_SCANVIDEO_PIXEL_BCOUNT))));
-
+  pin_mask |= 0x20; // mono
     for(uint8_t i = 0; pin_mask; i++, pin_mask>>=1u) {
         if (pin_mask & 1) gpio_set_function(i, GPIO_FUNC_PIO0);
     }
-    
+
     gpio_set_function(0, GPIO_FUNC_UART);
 
 #if !PICO_SCANVIDEO_ENABLE_VIDEO_CLOCK_DOWN
@@ -1618,7 +1618,7 @@ bool scanvideo_setup_with_timing(const scanvideo_mode_t *mode, const scanvideo_t
     const uint32_t vsync_bit = 0x00000001;  // VSYNC Pin 1
     uint32_t vsync_bit_pulse = timing->v_sync_polarity ? 0 : vsync_bit;
     uint32_t vsync_bit_no_pulse = timing->v_sync_polarity ? vsync_bit : 0;
-    
+
     // add csync output on display-on bit
     int csync_bit_pulse = hsync_bit_no_pulse << 1;
     int csync_bit_no_pulse = hsync_bit_pulse << 1;
@@ -1626,24 +1626,24 @@ bool scanvideo_setup_with_timing(const scanvideo_mode_t *mode, const scanvideo_t
     //const uint32_t display_on_bit = 0x00000000; //reuse display on as csync 0x00000004;  // Display On?
 
     // setup_dma_states_no_vblank()
-    dma_states[DMA_STATE_MODE_V_ACTIVE][0] 
+    dma_states[DMA_STATE_MODE_V_ACTIVE][0]
         = timing_encode(A_CMD, 4, csync_bit_pulse | hsync_bit_pulse | vsync_bit_no_pulse);
-    dma_states[DMA_STATE_MODE_V_ACTIVE][1] 
+    dma_states[DMA_STATE_MODE_V_ACTIVE][1]
         = timing_encode(B1_CMD, timing->h_pulse - 4, csync_bit_pulse | hsync_bit_pulse | vsync_bit_no_pulse);
-    dma_states[DMA_STATE_MODE_V_ACTIVE][2] 
+    dma_states[DMA_STATE_MODE_V_ACTIVE][2]
         = timing_encode(B2_CMD, h_back_porch, csync_bit_no_pulse | hsync_bit_no_pulse | vsync_bit_no_pulse);
-    dma_states[DMA_STATE_MODE_V_ACTIVE][3] 
+    dma_states[DMA_STATE_MODE_V_ACTIVE][3]
         = timing_encode(C_CMD, timing->h_total - h_back_porch - timing->h_pulse, csync_bit_no_pulse | hsync_bit_no_pulse | vsync_bit_no_pulse);
 
     // setup_dma_states_vblank
-    dma_states[DMA_STATE_MODE_V_BLANK][0] 
-        = timing_encode(A_CMD_VBLANK, 4, csync_bit_pulse | hsync_bit_pulse | vsync_bit_no_pulse); 
-    dma_states[DMA_STATE_MODE_V_BLANK][1] 
-        = timing_encode(B1_CMD, timing->h_pulse - 4, csync_bit_pulse | hsync_bit_pulse | vsync_bit_no_pulse); 
-    dma_states[DMA_STATE_MODE_V_BLANK][2] 
-        = timing_encode(B2_CMD, h_back_porch, csync_bit_no_pulse | hsync_bit_no_pulse | vsync_bit_no_pulse); 
-    dma_states[DMA_STATE_MODE_V_BLANK][3] 
-        = timing_encode(C_CMD_VBLANK, timing->h_total - h_back_porch - timing->h_pulse, csync_bit_no_pulse | hsync_bit_no_pulse | vsync_bit_no_pulse); 
+    dma_states[DMA_STATE_MODE_V_BLANK][0]
+        = timing_encode(A_CMD_VBLANK, 4, csync_bit_pulse | hsync_bit_pulse | vsync_bit_no_pulse);
+    dma_states[DMA_STATE_MODE_V_BLANK][1]
+        = timing_encode(B1_CMD, timing->h_pulse - 4, csync_bit_pulse | hsync_bit_pulse | vsync_bit_no_pulse);
+    dma_states[DMA_STATE_MODE_V_BLANK][2]
+        = timing_encode(B2_CMD, h_back_porch, csync_bit_no_pulse | hsync_bit_no_pulse | vsync_bit_no_pulse);
+    dma_states[DMA_STATE_MODE_V_BLANK][3]
+        = timing_encode(C_CMD_VBLANK, timing->h_total - h_back_porch - timing->h_pulse, csync_bit_no_pulse | hsync_bit_no_pulse | vsync_bit_no_pulse);
 
     // setup_dma_states_vblank() with pulse
 
@@ -1651,16 +1651,16 @@ bool scanvideo_setup_with_timing(const scanvideo_mode_t *mode, const scanvideo_t
         // CSYNC : Extend HSYNC during VSYNC period, 4 then h_back_porch-4, then off for h_pulse
         dma_states[DMA_STATE_MODE_V_BLANK_PULSE][0] = timing_encode(A_CMD_VBLANK, 4, csync_bit_pulse | hsync_bit_pulse | vsync_bit_pulse);
         dma_states[DMA_STATE_MODE_V_BLANK_PULSE][1] = timing_encode(B1_CMD, h_back_porch-4, csync_bit_pulse | hsync_bit_pulse | vsync_bit_pulse);
-        dma_states[DMA_STATE_MODE_V_BLANK_PULSE][2] 
+        dma_states[DMA_STATE_MODE_V_BLANK_PULSE][2]
             = timing_encode(B2_CMD, timing->h_total - h_back_porch - timing->h_pulse, csync_bit_pulse | hsync_bit_pulse | vsync_bit_pulse);
-        dma_states[DMA_STATE_MODE_V_BLANK_PULSE][3] 
+        dma_states[DMA_STATE_MODE_V_BLANK_PULSE][3]
             = timing_encode(C_CMD_VBLANK, timing->h_pulse, hsync_bit_no_pulse | csync_bit_pulse | vsync_bit_pulse);
     } else if ((timing->h_sync_polarity & CSYNC_SUPPRESS) == CSYNC_SUPPRESS) {
         // CSYNC : HSYNC pulse overriden by VSYNC pulse
         dma_states[DMA_STATE_MODE_V_BLANK_PULSE][0] = timing_encode(A_CMD_VBLANK, 4, csync_bit_pulse | hsync_bit_pulse | vsync_bit_pulse);
         dma_states[DMA_STATE_MODE_V_BLANK_PULSE][1] = timing_encode(B1_CMD, timing->h_pulse - 4, csync_bit_pulse | hsync_bit_pulse | vsync_bit_pulse);
         dma_states[DMA_STATE_MODE_V_BLANK_PULSE][2] = timing_encode(B2_CMD, h_back_porch, csync_bit_pulse | hsync_bit_pulse | vsync_bit_pulse);
-        dma_states[DMA_STATE_MODE_V_BLANK_PULSE][3] 
+        dma_states[DMA_STATE_MODE_V_BLANK_PULSE][3]
             = timing_encode(C_CMD_VBLANK, timing->h_total - h_back_porch - timing->h_pulse, csync_bit_pulse | hsync_bit_pulse | vsync_bit_pulse);
     } else
     {
@@ -1668,7 +1668,7 @@ bool scanvideo_setup_with_timing(const scanvideo_mode_t *mode, const scanvideo_t
         dma_states[DMA_STATE_MODE_V_BLANK_PULSE][0] = timing_encode(A_CMD_VBLANK, 4, csync_bit_pulse | hsync_bit_pulse | vsync_bit_pulse);
         dma_states[DMA_STATE_MODE_V_BLANK_PULSE][1] = timing_encode(B1_CMD, timing->h_pulse - 4, csync_bit_pulse | hsync_bit_pulse | vsync_bit_pulse);
         dma_states[DMA_STATE_MODE_V_BLANK_PULSE][2] = timing_encode(B2_CMD, h_back_porch, csync_bit_pulse | hsync_bit_no_pulse | vsync_bit_pulse);
-        dma_states[DMA_STATE_MODE_V_BLANK_PULSE][3] 
+        dma_states[DMA_STATE_MODE_V_BLANK_PULSE][3]
             = timing_encode(C_CMD_VBLANK, timing->h_total - h_back_porch - timing->h_pulse, csync_bit_pulse | hsync_bit_no_pulse | vsync_bit_pulse);
     }
 

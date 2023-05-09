@@ -37,7 +37,10 @@ enum {
   PATTERN_CGA_4COL_PALETTE2,
   PATTERN_GREY_BARS,
   PATTERN_GREY_0x0A,
-
+  PATTERN_FULL_GRATING,
+  PATTERN_LUMACODE,
+  PATTERN_APPLE_ARTIFACT,
+  PATTERN_TEXT,
 };
 
 static unsigned short bitmap[MAX_FRAME_BUFFER_WIDTH * FRAME_BUFFER_HEIGHT];    //small frame buffer to hold text
@@ -51,6 +54,7 @@ uint active_width;
 uint active_height;
 uint max_text_chars = 80;
 uint mode=0;
+uint bright = 0;
 scanvideo_mode_t vga_mode;
 uint pattern = PATTERN_12BIT;
 
@@ -136,7 +140,7 @@ int read_sw2() {
 
 void set_mode(int mode) {
 uint pixel_clk;
-    #define header "RGBtoHDMI Tester v0.20 (%dx%d@%dHz, %.2fMhz, %s)"
+    #define header "RGBtoHDMI Tester v0.33 (%dx%d@%dHz, %.2fMhz, %s)"
     border_colour = PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x4, 0x4, 0x4);
     max_text_chars = 80;
     uint black = PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x0, 0x0, 0x0);
@@ -144,74 +148,129 @@ uint pixel_clk;
 
     cls(black);
 
-    print_string(0, 0, "ST MONO OK",black, PICO_SCANVIDEO_PIXEL_FROM_RGB5(0x00, 0x01, 0x00));   //note uses otherwise unused 5th green lsb
-    print_string(0, 8, "ST BLANK OK",black, PICO_SCANVIDEO_PIXEL_FROM_RGB5(0x00, 0x00, 0x01));  //note uses otherwise unused 5th blue lsb
+    print_string(0, 0, "ST MONO OK",black, 0x00000020);   //note uses otherwise unused green lsb
+    print_string(0, 8, "ST BLANK OK",black, 0x00000800);  //note uses otherwise unused blue lsb
 
     switch (mode) {
         default:
         case 0 :
             active_width = 640;
             active_height = 256;
-            vga_mode = pal_mode_800x288_50_0_0;
+            vga_mode = pal_mode_800x288_50_312;
             pattern = PATTERN_12BIT;
             pixel_clk = vga_mode.default_timing->clock_freq;
             sprintf(line1, header, active_width, active_height, 50, (double)pixel_clk / 1000000, "+H+V-C");
-            sprintf(line2, "Mode %d: Digital: 12BPP, Analog: 4 Level_Terminated", mode);
+            sprintf(line2, "Mode %X: Digital: 12BPP, Analog: 4 Level_Terminated", mode);
             set_sys_clock_khz(pixel_clk * 8 / 1000, true);
             break;
         case 1 :
             active_width = 640;
             active_height = 256;
-            vga_mode = pal_mode_800x288_50_1_0;
+            vga_mode = pal_mode_800x288_50_316;
             pattern = PATTERN_12BIT;
             pixel_clk = vga_mode.default_timing->clock_freq;
-            sprintf(line1, header, active_width, active_height, 50, (double)pixel_clk / 1000000, "-H+V+C");
-            sprintf(line2, "Mode %d: Digital: 9BPP, Analog: 3 Level Terminated", mode);
+            sprintf(line1, header, active_width, active_height, 50, (double)pixel_clk / 1000000, "+H+V-C");
+            sprintf(line2, "Mode %X: Digital: 9BPP, Analog: 3 Level Terminated", mode);
             set_sys_clock_khz(pixel_clk * 8 / 1000, true);
             break;
         case 2 :
             active_width = 640;
             active_height = 256;
-            vga_mode = pal_mode_800x288_50_1_1;
+            vga_mode = pal_mode_800x288_50_310;
             pattern = PATTERN_12BIT;
             pixel_clk = vga_mode.default_timing->clock_freq;
-            sprintf(line1, header, active_width, active_height, 50, (double)pixel_clk / 1000000, "-H-V+C");
-            sprintf(line2, "Mode %d: Digital: 6BPP, Analog: 3 Level Term + Clamp", mode);
+            sprintf(line1, header, active_width, active_height, 50, (double)pixel_clk / 1000000, "+H+V-C");
+            sprintf(line2, "Mode %X: Digital: 6BPP, Analog: 3 Level Term + Clamp", mode);
             set_sys_clock_khz(pixel_clk * 8 / 1000, true);
             break;
         case 3 :
             active_width = 640;
             active_height = 256;
-            vga_mode = pal_mode_800x288_50_0_1;
+            vga_mode = pal_mode_800x288_50_314;
             pattern = PATTERN_12BIT;
             pixel_clk = vga_mode.default_timing->clock_freq;
             //border_colour = PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x0, 0x0, 0x8);
-            sprintf(line1, header, active_width, active_height, 50, (double)pixel_clk / 1000000, "+H-V-C");
-            sprintf(line2, "Mode %d: Digital: 3BPP, Analog: 3 Level UnTerminated", mode);
+            sprintf(line1, header, active_width, active_height, 50, (double)pixel_clk / 1000000, "+H+V-C");
+            sprintf(line2, "Mode %X: Digital: 3BPP, Analog: 3 Level UnTerminated", mode);
             set_sys_clock_khz(pixel_clk * 8 / 1000, true);
             break;
         case 4 :
             active_width = 640;
             active_height = 200;
-            vga_mode = ntsc_mode_744x240_60;
-            pattern = PATTERN_12BIT;
-            //pixel clock is 14312500
+            vga_mode = c64_mode_744x240_60_262;
+            pattern = PATTERN_LUMACODE;
+            //pixel clock is 16363636
             pixel_clk = vga_mode.default_timing->clock_freq;
-            //set_sys_clock_pll(1374000000, 6, 2);  //114.0Mhz but misread as 114.5 by clock_get_hz(clk_sys) without refdiv set to 2
-            //set_sys_clock_pll (1032000000, 3, 3);  //114.666666Mhz so pixel clock is 14.3333333mhz
-            set_sys_clock_pll_with_refdiv(1374000000, 6, 2, 2);  //114.5Mhz (8 * 14.3125Mhz)
-            sprintf(line1, header, active_width, active_height, 60, (double)pixel_clk / 1000000, "-H-V");
-            sprintf(line2, "Mode %d: Digital: 12BPP, Analog: Analog: 4 Level_Terminated", mode);
+            set_sys_clock_pll (1572000000, 6, 2);  //131Mhz so pixel clock is 16.375mhz
+            sprintf(line1, header, active_width, active_height, 60, (double)pixel_clk / 1000000, "+H+V-C");
+            sprintf(line2, "Mode %X: Commodore 64 LumaCode", mode);
             break;
         case 5 :
             active_width = 640;
             active_height = 200;
-            vga_mode = cga_mode_744x240_60;
+            vga_mode = apple_mode_744x240_60_266;
+            pattern = PATTERN_APPLE_ARTIFACT;
+            //pixel clock is 14312500
+            pixel_clk = vga_mode.default_timing->clock_freq;
+            set_sys_clock_pll_with_refdiv(1374000000, 6, 2, 2);  //114.5Mhz (8 * 14.3125Mhz)
+            sprintf(line1, header, active_width, active_height, 60, (double)pixel_clk / 1000000, "+H+V-C");
+            sprintf(line2, "Mode %X: Apple II NTSC Artifact", mode);
+            break;
+        case 6 :
+            active_width = 640;
+            active_height = 200;
+            vga_mode = cga_mode_744x240_60_00;
             pattern = PATTERN_CGA;
             pixel_clk = vga_mode.default_timing->clock_freq;
-            sprintf(line1, header, active_width, active_height, 60, (double)pixel_clk / 1000000, "+H-V");
-            sprintf(line2, "Mode %d: Digital: CGA, Analog: CGA", mode);
+            sprintf(line1, header, active_width, active_height, 60, (double)pixel_clk / 1000000, "+H+V");
+            sprintf(line2, "Mode %X: CGA Multi NTSC artifact", mode);
             set_sys_clock_pll_with_refdiv(1374000000, 6, 2, 2);  //114.5Mhz (8 * 14.3125Mhz)
+            //set_sys_clock_pll(1374000000, 6, 2);  //114.0Mhz but misread as 114.5 by clock_get_hz(clk_sys) without refdiv set to 2
+            //set_sys_clock_pll (1032000000, 3, 3);  //114.666666Mhz so pixel clock is 14.3333333mhz
+            break;
+        case 7 :
+            active_width = 640;
+            active_height = 200;
+            vga_mode = cga_mode_744x240_60_01;
+            pattern = PATTERN_CGA_MONO;
+            pixel_clk = vga_mode.default_timing->clock_freq;
+            sprintf(line1, header, active_width, active_height, 60, (double)pixel_clk / 1000000, "+H-V");
+            sprintf(line2, "Mode %X: CGA Mono Mode NTSC artifact", mode);
+            set_sys_clock_pll_with_refdiv(1374000000, 6, 2, 2);  //114.5Mhz (8 * 14.3125Mhz)
+            //set_sys_clock_pll(1374000000, 6, 2);  //114.0Mhz but misread as 114.5 by clock_get_hz(clk_sys) without refdiv set to 2
+            //set_sys_clock_pll (1032000000, 3, 3);  //114.666666Mhz so pixel clock is 14.3333333mhz
+            break;
+        case 8 :
+            active_width = 640;
+            active_height = 200;
+            vga_mode = cga_mode_744x240_60_10;
+            pattern = PATTERN_CGA_4COL_PALETTE1;
+            white = PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x8, 0xc, 0x0);
+            pixel_clk = vga_mode.default_timing->clock_freq;
+            sprintf(line1, header, active_width, active_height, 60, (double)pixel_clk / 1000000, "+H-V");
+            sprintf(line2, "Mode %X: CGA 4 Colour Palette 1 NTSC artifact", mode);
+            set_sys_clock_pll_with_refdiv(1374000000, 6, 2, 2);  //114.5Mhz (8 * 14.3125Mhz)
+            break;
+        case 9 :
+            active_width = 640;
+            active_height = 200;
+            vga_mode = cga_mode_744x240_60_11;
+            pattern = PATTERN_CGA_4COL_PALETTE2;
+            pixel_clk = vga_mode.default_timing->clock_freq;
+            sprintf(line1, header, active_width, active_height, 60, (double)pixel_clk / 1000000, "+H+V");
+            sprintf(line2, "Mode %X: CGA 4 Colour Palette 2 NTSC artifact", mode);
+            set_sys_clock_pll_with_refdiv(1374000000, 6, 2, 2);  //114.5Mhz (8 * 14.3125Mhz)
+            break;
+
+        case 10 :
+            active_width = 640;
+            active_height = 256;
+            vga_mode = pal_mode_800x288_50_312;
+            pattern = PATTERN_FULL_GRATING;
+            pixel_clk = vga_mode.default_timing->clock_freq;
+            sprintf(line1, header, active_width, active_height, 50, (double)pixel_clk / 1000000, "+H+V-C");
+            sprintf(line2, "Mode %X: Calibration test", mode);
+            set_sys_clock_khz(pixel_clk * 8 / 1000, true);
             break;
 
         case 11 :
@@ -222,7 +281,7 @@ uint pixel_clk;
             pixel_clk = vga_mode.default_timing->clock_freq;
             max_text_chars = 40;
             sprintf(line1, header, active_width, active_height, 60, (double)pixel_clk / 1000000, "+H+V-C");
-            sprintf(line2, "Mode %d: Digital: 9BPP, Analog: 8 Level Mono", mode);
+            sprintf(line2, "Mode %X: Digital: 9BPP, Analog: 8 Level Mono", mode);
             set_sys_clock_pll_with_refdiv(1374000000, 6, 2, 2);  //114.5Mhz (8 * 14.3125Mhz)
             break;
         case 12 :
@@ -233,32 +292,21 @@ uint pixel_clk;
             pixel_clk = vga_mode.default_timing->clock_freq;
             max_text_chars = 60;
             sprintf(line1, header, active_width, active_height, 60, (double)pixel_clk / 1000000, "+H+V-C");
-            sprintf(line2, "Mode %d: Digital: 9BPP, Analog: 8 Level Mono", mode);
+            sprintf(line2, "Mode %X: Digital: 9BPP, Analog: 8 Level Mono", mode);
             set_sys_clock_pll_with_refdiv(1374000000, 6, 2, 2);  //114.5Mhz (8 * 14.3125Mhz)
             break;
         case 13 :
-            active_width = 480;
-            active_height = 256;
-            vga_mode = pal_mode_576x288_50_0_0;
-            pattern = PATTERN_12BIT;
-            pixel_clk = vga_mode.default_timing->clock_freq;
-            max_text_chars = 60;
-            sprintf(line1, header, active_width, active_height, 60, (double)pixel_clk / 1000000, "+H+V-C");
-            sprintf(line2, "Mode %d: (192Mhz CPLD Clock) Digital: 3BPP, Analog: 3BPP", mode);
-            set_sys_clock_khz(pixel_clk * 8 / 1000, true);
-            break;            
-        case 14 :
             active_width = 640;
             active_height = 400;
             vga_mode = atari_mono_mode_704x464_72;
             pattern = PATTERN_GRATING;
-            border_colour = PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x0, 0x0, 0xf);           
+            border_colour = PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x0, 0x0, 0xf);
             pixel_clk = vga_mode.default_timing->clock_freq;
             sprintf(line1, header, active_width, active_height, 72, (double)pixel_clk / 1000000, "+H+V-C");
-            sprintf(line2, "Mode %d: (Atari Mono) Digital: 3BPP, Analog: 3BPP", mode);
+            sprintf(line2, "Mode %X: (Atari Mono) Digital: 3BPP, Analog: 3BPP", mode);
             set_sys_clock_pll_with_refdiv(1800000000, 7, 2, 1);  //128.571428Mhz
-            break;                        
-        case 15 :
+            break;
+        case 14 :
             vga_mode = portrait_mode_864x1024_59;
             // pixel clock is 64000000
             pixel_clk = vga_mode.default_timing->clock_freq;
@@ -267,10 +315,20 @@ uint pixel_clk;
             border_colour = PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x0, 0x0, 0xf);
             active_width = 864;
             active_height = 1024;
-            sprintf(line2, "Mode #%d: %dx%d@59Hz, 3BPP, +H+V, %dMhz", mode, active_width, active_height, pixel_clk / 1000000);
             sprintf(line1, header, active_width, active_height, 59, (double)pixel_clk / 1000000, "+H+V");
-            sprintf(line2, "Mode %d: (Hi res) Digital: 3BPP, Analog: 3BPP", mode);
+            sprintf(line2, "Mode %X: (Hi res) Digital: 3BPP, Analog: 3BPP", mode);
             pattern = PATTERN_GRATING;
+            break;
+        case 15 :
+            active_width = 480;
+            active_height = 256;
+            vga_mode = pal_mode_576x288_50_0_0;
+            pattern = PATTERN_TEXT;
+            pixel_clk = vga_mode.default_timing->clock_freq;
+            max_text_chars = 60;
+            sprintf(line1, header, active_width, active_height, 50, (double)pixel_clk / 1000000, "+H+V-C");
+            sprintf(line2, "Mode %X: 192Mhz CPLD Overclock Test", mode);
+            set_sys_clock_khz(pixel_clk * 8 / 1000, true);
             break;
     }
 
@@ -323,6 +381,47 @@ uint16_t * write_grating(uint16_t *p, uint32_t width, uint32_t first_pixel, uint
     return p;
 }
 
+uint16_t * write_burst_grating(uint16_t *p, uint32_t width, uint32_t first_pixel, uint32_t second_pixel) {
+    //have to write the grating in 32 bit pairs for speed
+static int swap = 0;
+    *p++ = COMPOSABLE_RAW_RUN;
+    *p++ = first_pixel;
+    *p++ = width - 3;
+    if (((uint32_t) p) & 2) {  //is 16 bit pointer in the middle of a 32 bit word?
+        *p++ = second_pixel;
+        uint32_t *ip =  (uint32_t*)p;
+        for (uint i = 0; i < (width >> 1) - 1; i++) {
+            if (i & 8) {
+                if (swap) {
+                *ip++ = (second_pixel << 16) | first_pixel;
+                } else {
+                  *ip++ = (first_pixel << 16) | second_pixel;
+                }
+            } else {
+                *ip++ = 0 ;
+            }
+        }
+        p = (uint16_t*)ip;
+    } else {
+        uint32_t *ip =  (uint32_t*)p;
+        for (uint i = 0; i < (width >> 1) - 1; i++) {
+            if (i & 8) {
+                if (swap) {
+                *ip++ = (first_pixel << 16) | second_pixel;
+                } else {
+                   *ip++ = (second_pixel << 16) | first_pixel;
+                }
+            } else {
+                *ip++ = 0 ;
+            }
+        }
+        p = (uint16_t*)ip;
+        *p++ = second_pixel;
+    }
+    swap ^= 1;
+    return p;
+}
+
 uint16_t * write_cga_bars(uint16_t *p, uint32_t width, uint32_t intensity) {
     for (int bar = 7; bar >= 0; bar--) {
         *p++ = COMPOSABLE_COLOR_RUN;
@@ -346,7 +445,7 @@ uint16_t * write_mono_artifacts(uint16_t *p, uint32_t width, uint32_t background
     *p++ = width - 3;
     uint bar_width = width /16;
     //fill in remaining pixels of first block
-    for (uint pixel = 0; pixel < bar_width - 1; pixel++) {
+    for (uint pixel = 0; pixel < (bar_width - 1); pixel++) {
         *p++ = background_colour;
     }
     for (uint bar = 1; bar < 16; bar++) {
@@ -369,13 +468,13 @@ uint16_t * write_four_colour_artifacts(uint16_t *p, uint32_t width, uint32_t col
     *p++ = width - 3;
     uint bar_width = width /16;
     //fill in remaining pixels of first block
-    for (uint pixel = 0; pixel < bar_width - 1; pixel++) {
+    for (uint pixel = 0; pixel < (bar_width - 1); pixel++) {
         *p++ = colour_0;
     }
     for (uint bar = 1; bar < 16; bar++) {
         for (uint pixel = 0; pixel < (bar_width / 4); pixel++) {
             //unrolled for speed
-            switch (bar >> 2 & 3) {
+            switch ((bar >> 2) & 3) {
                 case 0:
                     *p++ = colour_0;
                     *p++ = colour_0;
@@ -416,6 +515,103 @@ uint16_t * write_four_colour_artifacts(uint16_t *p, uint32_t width, uint32_t col
     return p;
 }
 
+uint16_t * write_lumacode(uint16_t *p, uint32_t width) {
+    uint32_t colour_table[] = {
+        PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x0, 0x0, 0x0),
+        PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x0, 0x4, 0x0),
+        PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x0, 0x8, 0x0),
+        PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x0, 0xc, 0x0)
+    };
+    uint phase = 0;
+    *p++ = COMPOSABLE_RAW_RUN;
+    *p++ = colour_table[0];
+    *p++ = width - 3;
+    uint bar_width = width /16;
+    //fill in remaining pixels of first block
+    for (uint pixel = 0; pixel < bar_width - 1; pixel++) {
+        *p++ = colour_table[0];
+    }
+    for (uint bar = 1; bar < 16; bar++) {
+        for (uint pixel = 0; pixel < (bar_width/2); pixel++) {
+             *p++ = colour_table[bar >> 2];
+             *p++ = colour_table[bar & 3];
+        }
+    }
+    return p;
+}
+
+uint16_t *write_text_block(uint16_t *p, uint line_num, uint bright) {
+uint bright_mask = PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x8, 0x8, 0x8) | (PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x8, 0x8, 0x8) << 16);
+    if (bright) {
+        bright_mask = PICO_SCANVIDEO_PIXEL_FROM_RGB4(0xf, 0xf, 0xf) | (PICO_SCANVIDEO_PIXEL_FROM_RGB4(0xf, 0xf, 0xf) << 16);
+    }
+
+    uint16_t padding = (active_width - max_text_chars * 8) >> 1;
+    if (padding > 0) {
+        switch (padding) {
+            case 1:
+                *p++ = COMPOSABLE_RAW_1P;
+                *p++ = PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x0, 0x0, 0x0);
+                break;
+            case 2:
+                *p++ = COMPOSABLE_RAW_2P;
+                *p++ = PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x0, 0x0, 0x0);
+                break;
+            default:
+                *p++ = COMPOSABLE_COLOR_RUN;
+                *p++ = PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x0, 0x0, 0x0);
+                *p++ = padding - 3;
+                break;
+        }
+    }
+
+    unsigned short *buf = &bitmap[MAX_FRAME_BUFFER_WIDTH * (line_num % 16)];
+    *p++ = COMPOSABLE_RAW_RUN;
+    //have to copy text image buffer in 32 bit pairs for speed
+    if (((uint32_t) p) & 2) {  //is 16 bit pointer in the middle of a 32 bit word?
+        *p++ = *buf++;
+        *p++ = max_text_chars * 8 - 3;
+        *p++ = *buf++;
+        uint32_t *ip =  (uint32_t*)p;
+        uint32_t *ibuf =  (uint32_t*)buf;
+        for (uint i = 0; i < ((max_text_chars * 8 - 2) >> 1); i++) {
+            *ip++ = *ibuf++ & bright_mask;
+        }
+        p = (uint16_t*)ip;
+    } else {
+        *p++ = PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x0, 0x0, 0x0);   //pad with 0 so p and buf 32 bit aligned
+        *p++ = max_text_chars * 8 - 3;
+        uint32_t *ip =  (uint32_t*)p;
+        uint32_t *ibuf =  (uint32_t*)buf;
+        for (uint i = 0; i < ((max_text_chars * 8 - 2) >> 1); i++) {
+            *ip++ = *ibuf++ & bright_mask;
+        }
+        p = (uint16_t*)ip;
+        *p++ = *buf++;
+    }
+
+    if (padding > 0) {
+        switch (padding) {
+            case 1:
+                *p++ = COMPOSABLE_RAW_1P;
+                *p++ = PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x0, 0x0, 0x0);
+                break;
+            case 2:
+                *p++ = COMPOSABLE_RAW_2P;
+                *p++ = PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x0, 0x0, 0x0);
+                break;
+            default:
+                *p++ = COMPOSABLE_COLOR_RUN;
+                *p++ = PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x0, 0x0, 0x0);
+                *p++ = padding - 3;
+                break;
+        }
+    }
+    return p;
+
+}
+
+
 void draw_test_pattern(scanvideo_scanline_buffer_t *buffer) {
     // figure out 1/32 of the color value
     uint line_num = scanvideo_scanline_number(buffer->scanline_id);
@@ -444,68 +640,7 @@ void draw_test_pattern(scanvideo_scanline_buffer_t *buffer) {
         } else if (line_num < (border_height + text_height)) {
 
             // = bitmap + ((line_num - border_height) * 640 / 2);
-
-            uint16_t padding = (active_width - max_text_chars * 8) >> 1;
-            if (padding > 0) {
-                switch (padding) {
-                    case 1:
-                        *p++ = COMPOSABLE_RAW_1P;
-                        *p++ = PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x0, 0x0, 0x0);
-                        break;
-                    case 2:
-                        *p++ = COMPOSABLE_RAW_2P;
-                        *p++ = PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x0, 0x0, 0x0);
-                        break;
-                    default:
-                        *p++ = COMPOSABLE_COLOR_RUN;
-                        *p++ = PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x0, 0x0, 0x0);
-                        *p++ = padding - 3;
-                        break;
-                }
-            }
-
-            unsigned short *buf = &bitmap[MAX_FRAME_BUFFER_WIDTH * (line_num - border_height)];
-            *p++ = COMPOSABLE_RAW_RUN;
-            //have to copy text image buffer in 32 bit pairs for speed
-            if (((uint32_t) p) & 2) {  //is 16 bit pointer in the middle of a 32 bit word?
-                *p++ = *buf++;
-                *p++ = max_text_chars * 8 - 3;
-                *p++ = *buf++;
-                uint32_t *ip =  (uint32_t*)p;
-                uint32_t *ibuf =  (uint32_t*)buf;
-                for (uint i = 0; i < ((max_text_chars * 8 - 2) >> 1); i++) {
-                    *ip++ = *ibuf++;
-                }
-                p = (uint16_t*)ip;
-            } else {
-                *p++ = PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x0, 0x0, 0x0);   //pad with 0 so p and buf 32 bit aligned
-                *p++ = max_text_chars * 8 - 3;
-                uint32_t *ip =  (uint32_t*)p;
-                uint32_t *ibuf =  (uint32_t*)buf;
-                for (uint i = 0; i < ((max_text_chars * 8 - 2) >> 1); i++) {
-                    *ip++ = *ibuf++;
-                }
-                p = (uint16_t*)ip;
-                *p++ = *buf++;
-            }
-
-            if (padding > 0) {
-                switch (padding) {
-                    case 1:
-                        *p++ = COMPOSABLE_RAW_1P;
-                        *p++ = PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x0, 0x0, 0x0);
-                        break;
-                    case 2:
-                        *p++ = COMPOSABLE_RAW_2P;
-                        *p++ = PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x0, 0x0, 0x0);
-                        break;
-                    default:
-                        *p++ = COMPOSABLE_COLOR_RUN;
-                        *p++ = PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x0, 0x0, 0x0);
-                        *p++ = padding - 3;
-                        break;
-                }
-            }
+            p = write_text_block(p, line_num - border_height, bright);
 
         } else {
             uint block = (line_num - border_height - text_height) * 12 / (active_height - text_height);
@@ -743,8 +878,62 @@ void draw_test_pattern(scanvideo_scanline_buffer_t *buffer) {
                             p = write_grating(p, active_width, PICO_SCANVIDEO_PIXEL_FROM_RGB4(0xf, 0xf, 0xf), PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x0, 0x0, 0x0));
                             break;
                     }
-
                 }
+                break;
+
+                case PATTERN_FULL_GRATING:
+                {
+                    p = write_grating(p, active_width, PICO_SCANVIDEO_PIXEL_FROM_RGB4(0xf, 0xf, 0xf), PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x0, 0x0, 0x0));
+                }
+                break;
+
+                case PATTERN_LUMACODE:
+                {
+                    p = write_lumacode(p, active_width);
+                }
+                break;
+
+                case PATTERN_APPLE_ARTIFACT:
+                {
+                    p = write_mono_artifacts(p, active_width, PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x0, 0x0, 0x0), PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x0, 0xf, 0x0));
+                }
+                break;
+
+                case PATTERN_CGA_MONO:
+                {
+                    if (bright) {
+                        p = write_mono_artifacts(p, active_width, PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x0, 0x0, 0x0), PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x8, 0xc, 0x8));
+                    } else {
+                        p = write_mono_artifacts(p, active_width, PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x0, 0x0, 0x0), PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x8, 0x8, 0x8));
+                    }
+                }
+                break;
+
+                case PATTERN_CGA_4COL_PALETTE1:
+                {
+                    if (bright) {
+                        p = write_four_colour_artifacts(p, active_width, PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x0, 0x0, 0x0), PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x0, 0xc, 0x0), PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x8, 0x4, 0x0), PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x8, 0xc, 0x0));
+                    } else {
+                        p = write_four_colour_artifacts(p, active_width, PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x0, 0x0, 0x0), PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x0, 0x8, 0x0), PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x8, 0x0, 0x0), PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x8, 0x8, 0x0));
+                    }
+                }
+                break;
+
+                case PATTERN_CGA_4COL_PALETTE2:
+                {
+                    if (bright) {
+                        p = write_four_colour_artifacts(p, active_width, PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x0, 0x0, 0x0), PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x0, 0xc, 0x8), PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x8, 0x4, 0x8), PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x8, 0xc, 0x8));
+                    } else {
+                        p = write_four_colour_artifacts(p, active_width, PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x0, 0x0, 0x0), PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x0, 0x8, 0x8), PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x8, 0x0, 0x8), PICO_SCANVIDEO_PIXEL_FROM_RGB4(0x8, 0x8, 0x8));
+                    }
+                }
+                break;
+
+                case PATTERN_TEXT:
+                {
+                    p = write_text_block(p, line_num - border_height, bright);
+                }
+                break;
 
             }
 
@@ -788,6 +977,7 @@ void core1_func() {
 }
 
 int main(void) {
+    const uint LED_PIN = 25;
     int current_mode;
     stdio_init_all();
     // init GPIO 0 as serial port for debugging
@@ -826,7 +1016,6 @@ int main(void) {
     // create a semaphore to be posted when video init is complete
     sem_init(&video_initted, 0, 1);
 
-
     current_mode = read_mode();
     set_mode(current_mode);
 
@@ -856,8 +1045,21 @@ int main(void) {
     sem_acquire_blocking(&video_initted);
     uint old_pattern = pattern;
     uint old_sw1 = 1;
+    uint led_count = 0;
+	gpio_init(LED_PIN);
+	gpio_set_dir(LED_PIN, GPIO_OUT);
+    bright = 1;
     while (true) {
         scanvideo_wait_for_vblank();
+
+		led_count ++;
+		if (led_count < 40)
+			gpio_put(LED_PIN,1);
+		else if (led_count < 100)
+			gpio_put(LED_PIN,0);
+		else
+			led_count = 0;
+
         int new_mode = read_mode();
         if (new_mode != current_mode) {
             watchdog_enable(1, 1);
@@ -867,14 +1069,21 @@ int main(void) {
 
         if (sw1 != old_sw1) {
             printf("SW1: %d\r\n", sw1);
-            if (sw1 == 0) {
-                pattern = PATTERN_GREY_0x0A;
+            if (new_mode < 4) {
+                bright = 1;
+                if (sw1 == 0) {
+                    pattern = PATTERN_GREY_0x0A;
+                } else {
+                    pattern = old_pattern;
+                }
+            } else if (new_mode >=7 && new_mode <=9) {
+                    bright = sw1;
             } else {
-                pattern = old_pattern;
+                bright = 1;
             }
             old_sw1 = sw1;
         }
-        
+
         uint sw2 = read_sw2();
         if (sw2 == 0) {
             active_width = vga_mode.width;

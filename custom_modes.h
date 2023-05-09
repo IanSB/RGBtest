@@ -1,11 +1,17 @@
-extern const scanvideo_mode_t pal_mode_800x288_50_0_0;
-extern const scanvideo_mode_t pal_mode_800x288_50_0_1;
-extern const scanvideo_mode_t pal_mode_800x288_50_1_0;
-extern const scanvideo_mode_t pal_mode_800x288_50_1_1;
+extern const scanvideo_mode_t pal_mode_800x288_50_312;
+extern const scanvideo_mode_t pal_mode_800x288_50_314;
+extern const scanvideo_mode_t pal_mode_800x288_50_310;
+extern const scanvideo_mode_t pal_mode_800x288_50_316;
+extern const scanvideo_mode_t c64_mode_744x240_60_262;
+extern const scanvideo_mode_t apple_mode_744x240_60_266;
+extern const scanvideo_mode_t cga_mode_744x240_60_00;
+extern const scanvideo_mode_t cga_mode_744x240_60_01;
+extern const scanvideo_mode_t cga_mode_744x240_60_10;
+extern const scanvideo_mode_t cga_mode_744x240_60_11;
+
 extern const scanvideo_mode_t pal_mode_576x288_60_TS9347_1_1;
 extern const scanvideo_mode_t pal_mode_384x288_60_TS9347_1_1;
-extern const scanvideo_mode_t ntsc_mode_744x240_60;
-extern const scanvideo_mode_t cga_mode_744x240_60;
+
 extern const scanvideo_mode_t portrait_mode_864x1024_59;
 extern const scanvideo_mode_t pal_mode_576x288_50_0_0;
 extern const scanvideo_mode_t atari_mono_mode_704x464_72;
